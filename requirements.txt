@@ -1,0 +1,5 @@
+discord.py>=2.5.1
+python-dotenv
+PyNaCl
+davey
+Pillow
