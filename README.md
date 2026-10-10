@@ -1,24 +1,16 @@
+
 # TutiBot 🤖
 
-TutiBot is a customized Discord bot featuring advanced statistics tracking, voice channel time logging, and a modular cogs architecture.
+TutiBot is a customized Discord bot with advanced interaction commands and features.
 
-> ⚠️ **Note:** This project is currently still in development.
+> ⚠️ **Note:** This project is still under development.
 
 ---
 
 ## 🚀 Features
 
-* **Voice Analytics:** Tracks and logs the time users spend in voice channels (`voice_times.json`).
-* **Interaction Stats:** Monitors command and message interaction data (`interaction_stats.json`).
-* **Modular Architecture:** Organized command systems and extensions managed under the `cogs/` directory.
-* **Utility Tools:** Helper functions and data handlers located in the `utils/` folder.
+* **Interaction Statistics:** Tracks command and message interaction data (`interaction_stats.json`).
 
----
+* **Gif Converter:** Allows you to create your own GIFs in seconds up to a certain megabit size without needing third-party websites.
 
-## 🛠️ Installation & Setup
-
-### 1. Install Dependencies
-Run the following command in your terminal to install the required Python packages:
-
-```bash
-pip install -r requirements.txt
+* **Fun Commands:** Includes small minigames and fun interaction commands.
