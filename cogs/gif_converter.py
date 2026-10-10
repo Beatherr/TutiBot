@@ -93,7 +93,7 @@ IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif")
 VIDEO_EXTENSIONS = (".mp4", ".mov", ".webm")
 
 LOADING_TIPS = [
-    "<a:stars_star:1533501961272561824> **Your video is being processed frame by frame with optimized pixels.**",
+    "<a:stars_star:1533501961272561824> **You can name your gif!**",
     "<a:Electrical:1533502037663154216> **Info:** Discord upload limits adjust automatically based on server boosts and Nitro status.",
     "<a:video:1533502131598921978> **Your GIF will be ready to share in just a few seconds.**",
     "<a:tuti:1533502289824841959> **Bot Note:** Applying the most suitable resolution for smooth and high-quality GIFs.",
