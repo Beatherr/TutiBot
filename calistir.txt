@@ -1,2 +1,0 @@
-cd "C:\Users\Administrator\Desktop\BLYAT"
-python bot.py
