@@ -29,35 +29,33 @@ GIF_TEMP_DIR = os.path.join(tempfile.gettempdir(), "TutiGIFConverter")
 os.makedirs(GIF_TEMP_DIR, exist_ok=True)
 
 async def remove_gif_temp_file(path, retries=3, delay=0.5):
-  """Async retry mechanism for Windows file lock issues (WinError 32) without blocking the event loop."""
-  if not path or not os.path.exists(path):
-    return
+    """Async retry mechanism for Windows file lock issues (WinError 32) without blocking the event loop."""
+    if not path or not os.path.exists(path):
+        return
 
-  for i in range(retries):
-    try:
-      # os.remove işlemini ana döngüyü bloklamamak için thread'e aktarıyoruz
-      await asyncio.to_thread(os.remove, path)
-      break
-    except PermissionError:
-      # time.sleep yerine botu kilititmeyen asyncio.sleep kullanıyoruz
-      await asyncio.sleep(delay)
-    except Exception as e:
-      print(f"Failed to delete temporary file {path}: {e}")
-      break
+    for _ in range(retries):
+        try:
+            await asyncio.to_thread(os.remove, path)
+            break
+        except PermissionError:
+            await asyncio.sleep(delay)
+        except Exception as e:
+            print(f"Failed to delete temporary file {path}: {e}")
+            break
 
 async def cleanup_gif_temp_files():
-  """Cleans up all temporary GIF converter files left over from previous or failed operations."""
-  try:
-    os.makedirs(GIF_TEMP_DIR, exist_ok=True)
-    for filename in os.listdir(GIF_TEMP_DIR):
-      path = os.path.join(GIF_TEMP_DIR, filename)
-      try:
-        if os.path.isfile(path):
-          await remove_gif_temp_file(path)  # <-- await eklendi
-      except Exception as e:
-        print(f"Failed to delete temporary file {path}: {e}")
-  except Exception as e:
-    print(f"GIF temporary cleanup error: {e}")
+    """Cleans up all temporary GIF converter files left over from previous or failed operations."""
+    try:
+        os.makedirs(GIF_TEMP_DIR, exist_ok=True)
+        for filename in os.listdir(GIF_TEMP_DIR):
+            path = os.path.join(GIF_TEMP_DIR, filename)
+            try:
+                if os.path.isfile(path):
+                    await remove_gif_temp_file(path)
+            except Exception as e:
+                print(f"Failed to delete temporary file {path}: {e}")
+    except Exception as e:
+        print(f"GIF temporary cleanup error: {e}")
 
 def create_gif_temp_file(suffix: str):
     """Creates a temporary file with a unique name inside the temporary directory."""
@@ -89,10 +87,9 @@ def _save_gif_notice_data(data):
     except Exception as e:
         print(f"Error saving GIF notice data: {e}")
 
-# Load notice data into memory when application starts
 gif_notice_data = _load_gif_notice_data()
 
-IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
+IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif")
 VIDEO_EXTENSIONS = (".mp4", ".mov", ".webm")
 
 LOADING_TIPS = [
@@ -150,7 +147,6 @@ def standalone_conversion_task(
     start_sec: Optional[float] = None,
     end_sec: Optional[float] = None,
 ):
-    # scale=max_width:-2 yapılarak tek sayı boyutlarından kaynaklı FFmpeg çökmeleri engellenir
     vf_filter = (
         f"fps={target_fps},scale={max_width}:-2:flags=lanczos,"
         "split[s0][s1];[s0]palettegen=stats_mode=diff[p];"
@@ -175,7 +171,6 @@ def standalone_conversion_task(
         output_path
     ]
 
-    # Hatanın ne olduğunu görebilmek için stderr'i yakalayalım
     result = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
@@ -285,7 +280,6 @@ class GifConverterCog(commands.Cog):
         return embed
 
     async def _safe_status_edit(self, status_msg, *, embed=None, view=None):
-        """Safe message editing function: silently suppresses discord.NotFound and HTTPException errors."""
         if not status_msg:
             return False
 
@@ -330,25 +324,6 @@ class GifConverterCog(commands.Cog):
                 print("Discord rejected media (error 20009: explicit content).")
                 return None
             raise
-
-    async def _send_invite_embed(self, destination):
-        invite_url = self._get_invite_url()
-        embed = discord.Embed(
-            title="GIF Converter",
-            description=(
-                "You need to upload a file to use this command.\n\n"
-                f"👉 **[Add App]({invite_url})**"
-            ),
-            color=discord.Color.blue(),
-        )
-        embed.add_field(
-            name="How to use?",
-            value="Upload an MP4/MOV/WEBM video or PNG/JPEG image and run the command. Optionally, you can specify a custom GIF name.",
-            inline=False,
-        )
-        embed.set_footer(text="You can use this command both on servers and via DM (Direct Message).")
-
-        await self._send_msg(destination, embed=embed)
 
     def _has_acknowledged_notice(self, user_id: int) -> bool:
         return gif_notice_data.get(str(user_id), False) is True
@@ -402,14 +377,14 @@ class GifConverterCog(commands.Cog):
 
         output_filename_display = sanitize_gif_filename(gif_name)
 
-        #### 1. EXTENSION AND SIZE CHECK
+        #### 1. UZANTI VE BOYUT KONTROLÜ
         attachment_name = attachment.filename.lower()
         if attachment_name.endswith(VIDEO_EXTENSIONS):
             is_video = True
         elif attachment_name.endswith(IMAGE_EXTENSIONS):
             is_video = False
         else:
-            return await self._send_msg(destination, content="Please upload an **MP4/MOV/WEBM** video or a **PNG/JPEG** image.")
+            return await self._send_msg(destination, content="Please upload an **MP4/MOV/WEBM** video or a **PNG/JPEG/GIF** image.")
 
         file_size_mb = attachment.size / (1024 * 1024)
         if is_video and file_size_mb > 200:
@@ -420,7 +395,7 @@ class GifConverterCog(commands.Cog):
             embed=self._make_status_embed("<a:time:1533499488478691609> Request Received", f"Queuing process... (Size: **{file_size_mb:.2f} MB**)", discord.Color.blurple())
         )
 
-        #### 2. TEMPORARY FILE CREATION
+        #### 2. GEÇİCİ DOSYA OLUŞTURMA
         suffix = os.path.splitext(attachment_name)[1]
         input_filename = create_gif_temp_file(suffix)
         output_filename = create_gif_temp_file(".gif")
@@ -428,25 +403,28 @@ class GifConverterCog(commands.Cog):
         try:
             await attachment.save(input_filename)
 
-            #### 3. IMAGE CONVERSION
+            #### 3. RESİM / GIF DÖNÜŞTÜRME
             if not is_video:
                 await self._safe_status_edit(
                     status_msg,
                     embed=self._make_status_embed(
-                        "🖼️ Converting Image",
+                        "🖼️ Converting Image / GIF",
                         "Converting to GIF format...",
                         discord.Color.blue()
                     )
                 )
                 
-                with Image.open(input_filename) as img:
-                    if img.mode not in ("RGB", "RGBA", "P", "L"):
-                        converted_img = img.convert("RGB")
-                        converted_img.save(output_filename, format="GIF", save_all=True)
-                        converted_img.close()
-                    else:
-                        img.save(output_filename, format="GIF", save_all=True)
-                    img.close()
+                def process_image():
+                    with Image.open(input_filename) as img:
+                        if img.format == "GIF":
+                            img.save(output_filename, format="GIF", save_all=True, optimize=True)
+                        elif img.mode not in ("RGB", "RGBA", "P", "L"):
+                            converted_img = img.convert("RGB")
+                            converted_img.save(output_filename, format="GIF", save_all=True)
+                        else:
+                            img.save(output_filename, format="GIF", save_all=True)
+
+                await asyncio.to_thread(process_image)
 
                 try:
                     increment_stat("total_gifs_converted", 1)
@@ -474,7 +452,6 @@ class GifConverterCog(commands.Cog):
                     return
 
                 gif_url = None
-
                 if sent_gif_message and hasattr(sent_gif_message, "attachments"):
                     if sent_gif_message.attachments:
                         gif_url = sent_gif_message.attachments[0].url
@@ -497,7 +474,7 @@ class GifConverterCog(commands.Cog):
                 )
                 return
 
-            #### 4. VIDEO DURATION AND QUEUE CHECK
+            #### 4. VİDEO SÜRE VE KUYRUK KONTROLÜ
             loop = asyncio.get_running_loop()
             duration = await loop.run_in_executor(None, get_video_duration, input_filename)
 
@@ -566,7 +543,7 @@ class GifConverterCog(commands.Cog):
                     )
                 )
 
-            #### 5. BACKGROUND GIF CONVERSION & PROGRESS TRACKING
+            #### 5. ARKA PLAN GIF DÖNÜŞTÜRME & İLERLEME TAKİBİ
             async with self.semaphore:
                 if self.queue_counter > 0:
                     self.queue_counter -= 1
@@ -591,8 +568,6 @@ class GifConverterCog(commands.Cog):
                     time_str = f"~{remaining_sec} seconds" if remaining_sec > 1 else "Almost done..."
                     
                     available_tips = [tip for tip in LOADING_TIPS if tip != last_tip]
-
-                    # Eğer kullanılabilir tip kalmadıysa ana listeye geri dön:
                     if not available_tips:
                         available_tips = LOADING_TIPS
 
@@ -613,7 +588,7 @@ class GifConverterCog(commands.Cog):
 
                 await future
 
-            #### 6. DELIVERY AND OUTPUT CHECK
+            #### 6. TESLİMAT VE ÇIKTI KONTROLÜ
             if not os.path.exists(output_filename):
                 raise Exception("Failed to create output file.")
 
@@ -647,7 +622,6 @@ class GifConverterCog(commands.Cog):
                 return
 
             gif_url = None
-
             if sent_gif_message and hasattr(sent_gif_message, "attachments"):
                 if sent_gif_message.attachments:
                     gif_url = sent_gif_message.attachments[0].url
@@ -673,7 +647,7 @@ class GifConverterCog(commands.Cog):
                 )
             )
 
-        #### 7. ERROR AND CLEANUP PROCEDURES
+        #### 7. HATA VE TEMİZLİK
         except discord.HTTPException as http_err:
             if http_err.status == 413 or http_err.code == 40005:
                 await self._safe_status_edit(
@@ -692,7 +666,6 @@ class GifConverterCog(commands.Cog):
 
             raise http_err
         except Exception as err:
-            # Gerçek hatayı konsola yazdırarak tespit edin:
             print(f"[GIF CONVERSION ERROR] {author} ({author.id}): {err}")
             
             await self._safe_status_edit(
@@ -753,7 +726,6 @@ class GifConverterCog(commands.Cog):
             if uploaded.attachments:
                 permanent_gif_url = uploaded.attachments[0].url
         except discord.HTTPException as http_err:
-            # Dosya çok büyükse (413 / 40005) hatayı konsola basma, sessizce devam et
             if http_err.status == 413 or http_err.code == 40005:
                 pass
             else:
@@ -803,9 +775,9 @@ class GifConverterCog(commands.Cog):
             print(f"GIF log embed error: {e}")
 
     # ==================== COMMANDS ====================
-    @app_commands.command(name="makegif", description="Converts your uploaded video or image into a high-quality GIF.")
+    @app_commands.command(name="makegif", description="Converts your uploaded video or image/GIF into a high-quality GIF.")
     @app_commands.describe(
-        file="MP4/MOV/WEBM video or PNG/JPEG image file to convert into a GIF",
+        file="MP4/MOV/WEBM video or PNG/JPEG/GIF file to convert into a GIF",
         name="Optional name for the generated GIF (without .gif)",
         start="Optional start time in seconds",
         end="Optional end time in seconds"
@@ -820,14 +792,11 @@ class GifConverterCog(commands.Cog):
         start: Optional[app_commands.Range[float, 0.0, 999999.0]] = None,
         end: Optional[app_commands.Range[float, 0.0, 999999.0]] = None
     ):
-        # Call defer() on the FIRST LINE to prevent 10062 (Unknown Interaction) errors.
         try:
             await interaction.response.defer()
         except discord.NotFound:
-            # Stop operation if interaction timed out due to network latency.
             return
 
-        # Send terms notice via followup message if user hasn't acknowledged.
         if not self._has_acknowledged_notice(interaction.user.id):
             await interaction.followup.send(
                 embed=discord.Embed(
