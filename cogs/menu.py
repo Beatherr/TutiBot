@@ -89,6 +89,8 @@ CATEGORIES = {
         "commands": [
             ("meme", "NEW ✨ Get a random internet meme!"),
             ("xox", "NEW ✨ Play a game of Tic-Tac-Toe with another user!"),
+            ("higherlower", "NEW ✨ Predict if the next card will be higher or lower!"),
+            ("duel", "NEW ✨ Challenge a user to a Western fast-draw duel!"),
             ("coinflip", "Flip a coin"),
             ("achievement", "Generate a custom Minecraft achievement banner"),
             ("ship", "Measure love compatibility between two users"),
