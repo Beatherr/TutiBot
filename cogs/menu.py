@@ -83,19 +83,19 @@ CATEGORIES = {
         ]
     },
     "fun": {
-        "label": "Fun & Games",
+        "label": "NEW ✨ Fun & Games",
         "description": "Mini-games and casual fun tools",
         "emoji": "<a:tuti:1533502289824841959>",
         "commands": [
+            ("meme", "NEW ✨ Get a random internet meme!"),
+            ("xox", "NEW ✨ Play a game of Tic-Tac-Toe with another user!"),
             ("coinflip", "Flip a coin"),
             ("achievement", "Generate a custom Minecraft achievement banner"),
             ("ship", "Measure love compatibility between two users"),
             ("8ball", "Ask the magic 8-ball a question"),
             ("mc", "Ask the Minecraft AI a question"),
             ("dice", "Roll a dice"),
-            ("slot", "Play a game of slots"),
-            ("meme", "NEW ✨ Get a random internet meme!"),
-            ("xox", "NEW ✨ Play a game of Tic-Tac-Toe with another user!")
+            ("slot", "Play a game of slots")
         ]
     },
     "gif_feedback": {
