@@ -1,4 +1,4 @@
-﻿import os
+import os
 import asyncio
 import traceback
 import time
@@ -48,6 +48,8 @@ class MyBot(commands.Bot):
             "cogs.achievement",
             "cogs.dice",
             "cogs.slot",
+            "cogs.xox",
+            "cogs.meme",
         ]
 
         for extension in initial_extensions:
