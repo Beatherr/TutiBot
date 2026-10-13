@@ -50,6 +50,8 @@ class MyBot(commands.Bot):
             "cogs.slot",
             "cogs.xox",
             "cogs.meme",
+            "cogs.higher_lower",
+            "cogs.duel",
         ]
 
         for extension in initial_extensions:
