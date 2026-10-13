@@ -93,7 +93,9 @@ CATEGORIES = {
             ("8ball", "Ask the magic 8-ball a question"),
             ("mc", "Ask the Minecraft AI a question"),
             ("dice", "Roll a dice"),
-            ("slot", "Play a game of slots")
+            ("slot", "Play a game of slots"),
+            ("meme", "NEW ✨ Get a random internet meme!"),
+            ("xox", "NEW ✨ Play a game of Tic-Tac-Toe with another user!")
         ]
     },
     "gif_feedback": {
@@ -157,7 +159,6 @@ class MenuView(discord.ui.View):
         self.current_page = current_page
         self.page_size = page_size
 
-        # Dropdown Menu (Row 0)
         self.add_item(CategorySelect(cog, current_category))
 
         commands_list = CATEGORIES.get(current_category, {}).get("commands", [])
@@ -165,7 +166,6 @@ class MenuView(discord.ui.View):
 
         is_main = (current_category == "main_menu")
 
-        # --- BUTTONS (Row 1) ---
         prev_btn = discord.ui.Button(
             emoji="◀️", 
             style=discord.ButtonStyle.primary if not is_main else discord.ButtonStyle.secondary, 
@@ -192,7 +192,6 @@ class MenuView(discord.ui.View):
         next_btn.callback = self.next_page
         self.add_item(next_btn)
 
-        # Mavi "Add App" Butonu
         invite_url = BOT_INVITE_URL
         
         add_app_btn = discord.ui.Button(
@@ -226,13 +225,10 @@ class MenuView(discord.ui.View):
 
     async def close_menu(self, interaction: discord.Interaction):
         try:
-            # 1. Discord'a buton etkileşiminin alındığını bildir (zaman aşımını önler)
             await interaction.response.defer()
-            # 2. Mesajı sil
             await interaction.delete_original_response()
         except Exception:
             try:
-                # Alternatif olarak mesaj nesnesi üzerinden silmeyi dene
                 await interaction.message.delete()
             except Exception:
                 pass
@@ -269,7 +265,6 @@ class MenuCog(commands.Cog):
         cat_data = CATEGORIES[category_key]
         
         embed = discord.Embed(color=discord.Color.from_rgb(114, 137, 218))
-
         invite_url = BOT_INVITE_URL
 
         if category_key == "main_menu":
