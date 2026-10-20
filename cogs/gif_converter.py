@@ -98,6 +98,7 @@ LOADING_TIPS = [
     "<a:video:1533502131598921978> **Your GIF will be ready to share in just a few seconds.**",
     "<a:tuti:1533502289824841959> **Bot Note:** Applying the most suitable resolution for smooth and high-quality GIFs.",
     "<a:tuti:1533502289824841959> **Add the app to your profile to use it in DMs or other servers!**",
+    "<a:stars_star:1533501961272561824> **Use '/menu' command to see all commands!**",
     "<a:developer_bot:1533502486101364746> **We want your ideas! Please use the /feedback` command to share your thoughts.**"
 ]
 
