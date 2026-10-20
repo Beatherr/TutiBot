@@ -15,9 +15,23 @@ class MemeCog(commands.Cog):
             async with session.get("https://meme-api.com/gimme") as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    embed = discord.Embed(title=data.get("title"), url=data.get("postLink"), color=discord.Color.orange())
+                    
+                    # 1. Safely handle the title length (Discord max is 256 chars)
+                    title = data.get("title", "Meme")
+                    if len(title) > 256:
+                        title = title[:253] + "..."
+                    
+                    embed = discord.Embed(
+                        title=title, 
+                        url=data.get("postLink"), 
+                        color=discord.Color.orange()
+                    )
                     embed.set_image(url=data.get("url"))
-                    embed.set_footer(text=f"Subreddit: r/{data.get('subreddit')} • Requested by {interaction.user.display_name}")
+                    
+                    # 2. Fixed footer text formatting (added spacing between subreddit and username)
+                    footer_text = f"Subreddit: r/{data.get('subreddit', 'unknown')} | Requested by {interaction.user.display_name}"
+                    embed.set_footer(text=footer_text)
+                    
                     await interaction.response.send_message(embed=embed)
                 else:
                     await interaction.response.send_message("Could not fetch a meme right now, try again later!", ephemeral=True)
